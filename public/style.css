@@ -49,6 +49,7 @@ h1 {
 .card {
   background: var(--card-bg);
   border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
   border-radius: 12px;
   padding: 18px;
   display: flex;
@@ -60,6 +61,18 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crest {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
 }
 
 .card-header h2 {
@@ -102,6 +115,43 @@ h1 {
 .outcome.W { background: var(--win); color: #08240f; }
 .outcome.L { background: var(--loss); color: #2a0a08; }
 .outcome.D { background: var(--draw); color: #2a2004; }
+
+.form-chips {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.form-chips .outcome {
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  font-size: 0.62rem;
+  margin-right: 0;
+}
+
+.standings-detail {
+  margin-top: 4px;
+}
+
+.standings-detail summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 0.78rem;
+}
+
+.standings-detail ol {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.standings-detail li.highlight {
+  color: var(--text);
+  font-weight: 600;
+}
 
 .headline a {
   color: var(--accent);

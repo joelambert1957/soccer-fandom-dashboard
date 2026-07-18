@@ -1,11 +1,11 @@
 const TEAMS = [
-  { id: "nashville-sc", name: "Nashville SC", league: "MLS" },
-  { id: "san-jose-earthquakes", name: "San Jose Earthquakes", league: "MLS" },
-  { id: "man-city", name: "Manchester City", league: "Premier League" },
-  { id: "barcelona", name: "Barcelona", league: "La Liga" },
-  { id: "flamengo", name: "Flamengo", league: "Série A" },
-  { id: "al-ahly", name: "Al Ahly", league: "Egyptian Premier League" },
-  { id: "al-mokawloon", name: "Al Mokawloon", league: "Egyptian Premier League" },
+  { id: "nashville-sc", name: "Nashville SC", league: "MLS", accent: "#ECE83A" },
+  { id: "san-jose-earthquakes", name: "San Jose Earthquakes", league: "MLS", accent: "#0450A1" },
+  { id: "man-city", name: "Manchester City", league: "Premier League", accent: "#6CABDD" },
+  { id: "barcelona", name: "Barcelona", league: "La Liga", accent: "#A50044" },
+  { id: "flamengo", name: "Flamengo", league: "Série A", accent: "#E30613" },
+  { id: "al-ahly", name: "Al Ahly", league: "Egyptian Premier League", accent: "#C4122F" },
+  { id: "al-mokawloon", name: "Al Mokawloon", league: "Egyptian Premier League", accent: "#1E8A3C" },
 ];
 
 const REFRESH_MS = 15 * 60 * 1000;
@@ -24,12 +24,27 @@ function formatDate(iso) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+function renderHeader(team, crest) {
+  const header = el("div", "card-header");
+  const titleGroup = el("div", "title-group");
+  if (crest) {
+    const img = document.createElement("img");
+    img.className = "crest";
+    img.src = crest;
+    img.alt = "";
+    img.loading = "lazy";
+    titleGroup.append(img);
+  }
+  titleGroup.append(el("h2", null, team.name));
+  header.append(titleGroup, el("span", "league", team.league));
+  return header;
+}
+
 function renderCardSkeleton(team) {
   const card = el("article", "card skeleton");
   card.id = `card-${team.id}`;
-  const header = el("div", "card-header");
-  header.append(el("h2", null, team.name), el("span", "league", team.league));
-  card.append(header, el("p", "status-note", "Loading…"));
+  card.style.setProperty("--accent", team.accent);
+  card.append(renderHeader(team, null), el("p", "status-note", "Loading…"));
   return card;
 }
 
@@ -64,12 +79,53 @@ function renderHeadlineRow(headline) {
   return row;
 }
 
+function renderFormChips(form) {
+  const wrap = el("span", "form-chips");
+  for (const ch of form) {
+    if (ch === "W" || ch === "D" || ch === "L") {
+      wrap.append(el("span", `outcome ${ch}`, ch));
+    }
+  }
+  return wrap;
+}
+
+function renderStandingsRow(standings) {
+  const row = el("div", "row standings");
+  row.append(el("span", "label", "Standings"));
+
+  const summary = document.createElement("div");
+  const seasonLabel = standings.isFinal ? `${standings.season} · Final` : standings.season;
+  summary.append(
+    document.createTextNode(
+      standings.teamRank ? `#${standings.teamRank} · ${seasonLabel}` : `Outside top 5 · ${seasonLabel}`
+    )
+  );
+  if (standings.teamForm) {
+    summary.append(renderFormChips(standings.teamForm));
+  }
+  row.append(summary);
+
+  if (standings.top && standings.top.length) {
+    const details = document.createElement("details");
+    details.className = "standings-detail";
+    details.append(el("summary", null, "Top 5"));
+    const list = document.createElement("ol");
+    standings.top.forEach((entry) => {
+      const li = el("li", entry.isTracked ? "highlight" : null, `${entry.team} — ${entry.points} pts`);
+      list.append(li);
+    });
+    details.append(list);
+    row.append(details);
+  }
+
+  return row;
+}
+
 function renderCard(team, teamData) {
   const card = el("article", "card");
   card.id = `card-${team.id}`;
-  const header = el("div", "card-header");
-  header.append(el("h2", null, team.name), el("span", "league", team.league));
-  card.append(header);
+  card.style.setProperty("--accent", team.accent);
+  card.append(renderHeader(team, teamData?.crest));
 
   if (!teamData || teamData.status === "error" || teamData.status === "unconfigured") {
     card.append(el("p", "status-note", teamData?.message || "No update available."));
@@ -85,7 +141,10 @@ function renderCard(team, teamData) {
   if (teamData.headline) {
     card.append(renderHeadlineRow(teamData.headline));
   }
-  if (!teamData.nextMatch && !teamData.lastResult && !teamData.headline) {
+  if (teamData.standings) {
+    card.append(renderStandingsRow(teamData.standings));
+  }
+  if (!teamData.nextMatch && !teamData.lastResult && !teamData.headline && !teamData.standings) {
     card.append(el("p", "status-note", "No update available."));
   }
 

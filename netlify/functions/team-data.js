@@ -1,11 +1,12 @@
-// Fans out to the right provider per team and merges the results into one
-// response. Per-team failures never fail the whole request — each card
-// gets an "ok" | "unconfigured" | "error" status instead.
+// Fans out to each team's providers and merges their results into one
+// response. Per-team (and per-provider) failures never fail the whole
+// request — each card gets an "ok" | "unconfigured" | "error" status
+// instead.
 const teams = require("./lib/teams");
 const { fetchSportsDb } = require("./lib/providers/sportsdb");
 const { fetchApiFootball } = require("./lib/providers/apiFootball");
 const { fetchRss } = require("./lib/providers/rss");
-const { errored } = require("./lib/normalize");
+const { errored, mergeTeamData } = require("./lib/normalize");
 
 const PROVIDERS = {
   sportsdb: fetchSportsDb,
@@ -18,17 +19,19 @@ const PROVIDERS = {
 // separate scheduled function.
 const CACHE_SECONDS = 15 * 60;
 
-exports.handler = async () => {
-  const results = await Promise.allSettled(
-    teams.map((team) => {
-      const provider = PROVIDERS[team.provider];
-      return provider ? provider(team) : Promise.resolve(errored(team, "Unknown provider."));
+async function fetchTeam(team) {
+  const results = await Promise.all(
+    team.providers.map((name) => {
+      const provider = PROVIDERS[name];
+      if (!provider) return Promise.resolve(errored(team, `Unknown provider: ${name}.`));
+      return provider(team).catch((err) => errored(team, err.message));
     })
   );
+  return mergeTeamData(team, results);
+}
 
-  const data = results.map((result, i) =>
-    result.status === "fulfilled" ? result.value : errored(teams[i], result.reason?.message)
-  );
+exports.handler = async () => {
+  const data = await Promise.all(teams.map(fetchTeam));
 
   return {
     statusCode: 200,
