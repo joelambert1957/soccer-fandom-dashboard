@@ -20,28 +20,22 @@ module.exports = [
     id: "man-city",
     name: "Manchester City",
     league: "Premier League",
-    provider: "apiFootball",
+    provider: "sportsdb",
     query: "Manchester City",
-    // Best-effort known id from api-football's public docs/examples.
-    // Verify against GET /teams?search=Manchester%20City once you have a key
-    // and update if it doesn't match.
-    apiFootballId: 50,
   },
   {
     id: "barcelona",
     name: "Barcelona",
     league: "La Liga",
-    provider: "apiFootball",
+    provider: "sportsdb",
     query: "Barcelona",
-    apiFootballId: 529,
   },
   {
     id: "flamengo",
     name: "Flamengo",
     league: "Série A",
-    provider: "apiFootball",
+    provider: "sportsdb",
     query: "Flamengo",
-    apiFootballId: 127,
   },
   {
     id: "al-ahly",

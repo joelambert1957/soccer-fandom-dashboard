@@ -9,8 +9,9 @@ providers so API keys stay server-side.
 
 - `public/` — static frontend (`index.html`, `style.css`, `app.js`)
 - `netlify/functions/team-data.js` — orchestrator, calls one provider per team
-- `netlify/functions/lib/providers/` — `sportsdb.js` (MLS), `apiFootball.js`
-  (Man City, Barcelona, Flamengo), `rss.js` (Al Ahly, Al Mokawloon)
+- `netlify/functions/lib/providers/` — `sportsdb.js` (all 5 non-Egyptian teams,
+  see note below), `apiFootball.js` (currently unused, see note below),
+  `rss.js` (Al Ahly, Al Mokawloon)
 - `netlify/functions/lib/teams.js` — the 7-team roster and which provider/query each uses
 
 Every provider fails gracefully per team — a missing key or a broken feed
@@ -18,14 +19,17 @@ shows "No update available" on that one card instead of breaking the page.
 
 ## Setup
 
-1. `cp .env.example .env` and fill in what you have:
-   - `API_FOOTBALL_KEY` — from [api-football.com](https://www.api-football.com/) / api-sports.io (free tier: 100 req/day)
-   - `SPORTSDB_KEY` — optional, falls back to TheSportsDB's public `"3"` test key
+No API key is required for 5 of the 7 cards — they run on TheSportsDB's free
+public test key by default.
+
+1. (Optional) `cp .env.example .env` — only needed if you set `SPORTSDB_KEY`
+   to raise TheSportsDB's rate limit. `API_FOOTBALL_KEY` is currently unused
+   (see "Known gaps" below).
 2. Install the [Netlify CLI](https://docs.netlify.com/cli/get-started/) if you don't have it: `npm install -g netlify-cli`
 3. `netlify dev` — serves `public/` and the functions together at `localhost:8888`
 
-With no keys set, all 7 cards still render and show "not configured" instead
-of erroring — good for checking layout before wiring up real data.
+Al Ahly and Al Mokawloon will show "not configured" until real RSS feed URLs
+are added to `teams.js` — that's expected, not an error.
 
 ## Deploy
 
@@ -35,12 +39,17 @@ Environment variables (never commit `.env`).
 
 ## Known gaps to fill in later
 
+- **API-Football's free tier can't power "next match" / "last result."**
+  Tested live with a real key: the `next=`/`last=` fixture params are
+  paid-only ("Free plans do not have access to the Next parameter"), and
+  season access is capped to 2022–2024 — no current-season fixtures at all
+  on the free plan. So Man City, Barcelona, and Flamengo were moved to the
+  `sportsdb` provider instead (confirmed working, no key, current-season
+  data). `apiFootball.js` is left in place but unused; if you upgrade to a
+  paid API-Football plan later it'd mainly be useful for things TheSportsDB
+  doesn't cover well (deeper stats, lineups, odds).
 - **Al Ahly / Al Mokawloon**: `rssFeeds` in `teams.js` is empty — add real
   feed URLs (e.g. KingFut, FilGoal) once you've confirmed them; nothing was
   guessed here. Fixture data for these two isn't wired up yet, only headlines.
-- **Headlines for the other 5 teams**: not implemented yet (API-Football and
-  TheSportsDB don't provide news). Cards just omit the News row until a
-  source is added.
-- **Man City / Barcelona / Flamengo team IDs** in `teams.js` are best-effort
-  from public API-Football docs — worth a one-time check against
-  `GET /teams?search=<name>` once you have a key.
+- **Headlines for the other 5 teams**: not implemented yet (TheSportsDB
+  doesn't provide news). Cards just omit the News row until a source is added.
