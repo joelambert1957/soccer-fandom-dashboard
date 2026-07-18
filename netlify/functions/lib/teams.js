@@ -1,6 +1,6 @@
 // One entry per card on the dashboard. `provider` selects which module in
-// lib/providers/ handles the team; provider-specific fields (apiFootballId,
-// rssFeeds, etc.) are only read by that provider.
+// lib/providers/ handles the team; provider-specific fields (rssFeeds,
+// keywords, etc.) are only read by that provider.
 module.exports = [
   {
     id: "nashville-sc",
@@ -42,16 +42,17 @@ module.exports = [
     name: "Al Ahly",
     league: "Egyptian Premier League",
     provider: "rss",
-    // Add real feed URLs (e.g. KingFut, FilGoal team/tag feeds) once
-    // confirmed. Left empty by default so the card fails gracefully
-    // instead of shipping an unverified guessed URL.
-    rssFeeds: [],
+    // KingFut's feed covers Egyptian football broadly, not per-team, so we
+    // filter items by keyword instead of expecting a clean team feed.
+    rssFeeds: ["https://feeds.feedburner.com/KingFut"],
+    keywords: ["ahly"],
   },
   {
     id: "al-mokawloon",
     name: "Al Mokawloon",
     league: "Egyptian Premier League",
     provider: "rss",
-    rssFeeds: [],
+    rssFeeds: ["https://feeds.feedburner.com/KingFut"],
+    keywords: ["mokawloon"],
   },
 ];

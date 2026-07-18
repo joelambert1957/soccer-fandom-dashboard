@@ -28,8 +28,11 @@ public test key by default.
 2. Install the [Netlify CLI](https://docs.netlify.com/cli/get-started/) if you don't have it: `npm install -g netlify-cli`
 3. `netlify dev` — serves `public/` and the functions together at `localhost:8888`
 
-Al Ahly and Al Mokawloon will show "not configured" until real RSS feed URLs
-are added to `teams.js` — that's expected, not an error.
+Al Ahly and Al Mokawloon pull headlines from KingFut's general Egyptian
+football feed, filtered by keyword (see "Known gaps" below) — a card
+occasionally showing "no recent headline matched" just means that team
+hasn't had news in the feed's last 10 items recently. That's expected, not
+an error.
 
 ## Deploy
 
@@ -48,8 +51,13 @@ Environment variables (never commit `.env`).
   data). `apiFootball.js` is left in place but unused; if you upgrade to a
   paid API-Football plan later it'd mainly be useful for things TheSportsDB
   doesn't cover well (deeper stats, lineups, odds).
-- **Al Ahly / Al Mokawloon**: `rssFeeds` in `teams.js` is empty — add real
-  feed URLs (e.g. KingFut, FilGoal) once you've confirmed them; nothing was
-  guessed here. Fixture data for these two isn't wired up yet, only headlines.
+- **Al Ahly / Al Mokawloon**: headlines only come from KingFut's general feed
+  (`https://feeds.feedburner.com/KingFut`), filtered by keyword (`"ahly"`,
+  `"mokawloon"` in `teams.js`) since it's not a per-team feed — no clean
+  structured API exists for these two, matching the original plan's "weak
+  link" expectation. FilGoal was considered but no working RSS URL was
+  confirmed for it; add one to `rssFeeds` later if found. Fixture data
+  (next match / last result) isn't wired up for these two at all yet, only
+  headlines.
 - **Headlines for the other 5 teams**: not implemented yet (TheSportsDB
   doesn't provide news). Cards just omit the News row until a source is added.
