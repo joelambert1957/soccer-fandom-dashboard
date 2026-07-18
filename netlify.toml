@@ -1,0 +1,8 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/team-data"
+  to = "/.netlify/functions/team-data"
+  status = 200
