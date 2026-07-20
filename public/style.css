@@ -162,6 +162,29 @@ h1 {
   text-decoration: underline;
 }
 
+.row.links {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.row.links a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+
+.row.links a:hover {
+  background: var(--accent);
+  color: var(--card-bg);
+}
+
 .status-note {
   color: var(--muted);
   font-size: 0.85rem;

@@ -1,11 +1,72 @@
 const TEAMS = [
-  { id: "nashville-sc", name: "Nashville SC", league: "MLS", accent: "#ECE83A" },
-  { id: "san-jose-earthquakes", name: "San Jose Earthquakes", league: "MLS", accent: "#0450A1" },
-  { id: "man-city", name: "Manchester City", league: "Premier League", accent: "#6CABDD" },
-  { id: "barcelona", name: "Barcelona", league: "La Liga", accent: "#A50044" },
-  { id: "flamengo", name: "Flamengo", league: "Série A", accent: "#E30613" },
-  { id: "al-ahly", name: "Al Ahly", league: "Egyptian Premier League", accent: "#C4122F" },
-  { id: "al-mokawloon", name: "Al Mokawloon", league: "Egyptian Premier League", accent: "#1E8A3C" },
+  {
+    id: "nashville-sc",
+    name: "Nashville SC",
+    league: "MLS",
+    accent: "#ECE83A",
+    links: {
+      roster: "https://www.nashvillesc.com/roster/team-roster",
+      instagram: "https://www.instagram.com/nashvillesc/?hl=en",
+    },
+  },
+  {
+    id: "san-jose-earthquakes",
+    name: "San Jose Earthquakes",
+    league: "MLS",
+    accent: "#0450A1",
+    links: {
+      roster: "https://www.sjearthquakes.com/roster/",
+      instagram: "https://www.instagram.com/sjearthquakes/?hl=en",
+    },
+  },
+  {
+    id: "man-city",
+    name: "Manchester City",
+    league: "Premier League",
+    accent: "#6CABDD",
+    links: {
+      roster: "https://www.mancity.com/players/mens",
+      instagram: "https://www.instagram.com/mancity/?hl=en",
+    },
+  },
+  {
+    id: "barcelona",
+    name: "Barcelona",
+    league: "La Liga",
+    accent: "#A50044",
+    links: {
+      roster: "https://www.fcbarcelona.com/en/football/first-team/players",
+      instagram: "https://www.instagram.com/fcbarcelona/?hl=en",
+    },
+  },
+  {
+    id: "flamengo",
+    name: "Flamengo",
+    league: "Série A",
+    accent: "#E30613",
+    links: {
+      roster: "https://en.flamengo.com.br/pagina-inicial",
+      instagram: "https://www.instagram.com/flamengo/",
+    },
+  },
+  {
+    id: "al-ahly",
+    name: "Al Ahly",
+    league: "Egyptian Premier League",
+    accent: "#C4122F",
+    links: {
+      roster: "https://www.alahlyegypt.com/en/football/first-team",
+      instagram: "https://www.instagram.com/al_ahly_football_club/?hl=en",
+    },
+  },
+  {
+    id: "al-mokawloon",
+    name: "Al Mokawloon",
+    league: "Egyptian Premier League",
+    accent: "#1E8A3C",
+    // No roster/Instagram link confirmed yet — card just omits the row.
+    links: {},
+  },
 ];
 
 const REFRESH_MS = 15 * 60 * 1000;
@@ -40,11 +101,33 @@ function renderHeader(team, crest) {
   return header;
 }
 
+function renderLinksRow(links) {
+  const row = el("div", "row links");
+  if (links.roster) {
+    const a = el("a", null, "Roster");
+    a.href = links.roster;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    row.append(a);
+  }
+  if (links.instagram) {
+    const a = el("a", null, "Instagram");
+    a.href = links.instagram;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    row.append(a);
+  }
+  return row;
+}
+
 function renderCardSkeleton(team) {
   const card = el("article", "card skeleton");
   card.id = `card-${team.id}`;
   card.style.setProperty("--accent", team.accent);
   card.append(renderHeader(team, null), el("p", "status-note", "Loading…"));
+  if (team.links && (team.links.roster || team.links.instagram)) {
+    card.append(renderLinksRow(team.links));
+  }
   return card;
 }
 
@@ -129,23 +212,28 @@ function renderCard(team, teamData) {
 
   if (!teamData || teamData.status === "error" || teamData.status === "unconfigured") {
     card.append(el("p", "status-note", teamData?.message || "No update available."));
-    return card;
+  } else {
+    if (teamData.nextMatch) {
+      card.append(renderMatchRow("Next match", teamData.nextMatch));
+    }
+    if (teamData.lastResult) {
+      card.append(renderResultRow(teamData.lastResult));
+    }
+    if (teamData.headline) {
+      card.append(renderHeadlineRow(teamData.headline));
+    }
+    if (teamData.standings) {
+      card.append(renderStandingsRow(teamData.standings));
+    }
+    if (!teamData.nextMatch && !teamData.lastResult && !teamData.headline && !teamData.standings) {
+      card.append(el("p", "status-note", "No update available."));
+    }
   }
 
-  if (teamData.nextMatch) {
-    card.append(renderMatchRow("Next match", teamData.nextMatch));
-  }
-  if (teamData.lastResult) {
-    card.append(renderResultRow(teamData.lastResult));
-  }
-  if (teamData.headline) {
-    card.append(renderHeadlineRow(teamData.headline));
-  }
-  if (teamData.standings) {
-    card.append(renderStandingsRow(teamData.standings));
-  }
-  if (!teamData.nextMatch && !teamData.lastResult && !teamData.headline && !teamData.standings) {
-    card.append(el("p", "status-note", "No update available."));
+  // Roster/Instagram links are static and don't depend on any API, so they
+  // stay visible even if the live-data fetch for this team failed.
+  if (team.links && (team.links.roster || team.links.instagram)) {
+    card.append(renderLinksRow(team.links));
   }
 
   return card;
